@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPI Pendidikan Pancasila - Detektif Cilik Lambang Negara</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Nunito for kid-friendly design -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for rewards -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        pancasila: {
+                            yellow: '#FFD166',
+                            red: '#EF476F',
+                            blue: '#118AB2',
+                            green: '#06D6A0',
+                            darkBlue: '#073B4C',
+                            purple: '#8338EC'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+            background-color: #f0fdf4;
+        }
+
+        .heading-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Glassmorphism & custom buttons */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 4px solid #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-game {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            box-shadow: 0 6px 0 shadow-color;
+        }
+
+        .btn-game:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 shadow-color;
+        }
+
+        /* Custom Animations */
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .symbol-card {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .symbol-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        /* Custom Drag & Drop styling */
+        .drag-item {
+            cursor: grab;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone.over {
+            border-color: #06D6A0 !important;
+            background-color: #d1fae5 !important;
+        }
+
+        /* Print certificate styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 via-sky-50 to-emerald-50 min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="no-print bg-white/90 backdrop-blur border-b-4 border-amber-300 px-4 py-3 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <!-- App Title & Detective Badge -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="goToSlide(1)">
+                <div class="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center text-amber-900 font-extrabold shadow border-2 border-amber-500 text-lg animate-bounce">
+                    🔍
+                </div>
+                <div>
+                    <h1 class="heading-font text-lg md:text-xl font-bold text-slate-800 leading-tight">DETEKTIF CILIK PANCASILA</h1>
+                    <p class="text-xs text-amber-700 font-semibold hidden sm:block">SDN 002 Singkep • Kelas 1 SD</p>
+                </div>
+            </div>
+
+            <!-- Jump to Slide Selector & Navigation Controls -->
+            <div class="flex items-center gap-2">
+                <!-- Text To Speech Toggle -->
+                <button id="btn-tts" onclick="toggleAudioNarrator()" title="Baca Teks Suara" class="bg-amber-100 hover:bg-amber-200 text-amber-800 p-2.5 rounded-xl border-2 border-amber-300 text-sm font-bold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-volume-high text-lg" id="tts-icon"></i>
+                    <span class="hidden md:inline">Suara: ON</span>
+                </button>
+
+                <!-- Quick Slide Dropdown -->
+                <div class="relative">
+                    <select id="slide-select" onchange="goToSlide(parseInt(this.value))" class="bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 text-slate-700 font-bold py-2 px-3 rounded-xl text-xs sm:text-sm cursor-pointer outline-none">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Slide counter badge -->
+                <span id="slide-indicator" class="bg-amber-400 text-amber-950 font-black px-3 py-1.5 rounded-xl text-xs sm:text-sm border-2 border-amber-500 shadow-sm">
+                    1 / 25
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Presentation Canvas -->
+    <main class="flex-1 flex items-center justify-center p-3 sm:p-6 max-w-6xl w-full mx-auto my-auto">
+        <div id="slide-card" class="glass-card w-full rounded-3xl p-4 sm:p-8 min-h-[520px] flex flex-col justify-between relative overflow-hidden transition-all duration-300">
+            <!-- Dynamic Slide Content rendered here by JavaScript -->
+            <div id="slide-content" class="flex-1 flex flex-col justify-center"></div>
+
+            <!-- Slide Navigation Footer Inside Card -->
+            <div class="no-print mt-6 pt-4 border-t-2 border-slate-100 flex justify-between items-center gap-2">
+                <button id="btn-prev" onclick="prevSlide()" class="btn-game bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold px-4 sm:px-6 py-2.5 rounded-2xl border-b-4 border-slate-400 text-sm sm:text-base flex items-center gap-2 transition disabled:opacity-30 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-arrow-left"></i> KEMBALI
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="goToSlide(1)" title="Kembali ke Cover" class="bg-sky-100 hover:bg-sky-200 text-sky-700 p-2.5 rounded-xl border-2 border-sky-300">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
+                    <button onclick="repeatCurrentSlideSpeech()" title="Putar Suara Penjelasan" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 p-2.5 rounded-xl border-2 border-emerald-300">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+
+                <button id="btn-next" onclick="nextSlide()" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-5 sm:px-8 py-2.5 rounded-2xl border-b-4 border-emerald-700 text-sm sm:text-base flex items-center gap-2 transition">
+                    LANJUT <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Group Mission Instructions -->
+    <div id="group-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-lg w-full border-4 border-amber-400 shadow-2xl text-center relative">
+            <button onclick="closeGroupModal()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 font-black">✕</button>
+            <div class="text-5xl mb-3">👨‍👩‍👧‍👦</div>
+            <h3 class="heading-font text-2xl font-bold text-amber-600 mb-2">Panduan Misi Detektif Kelompok</h3>
+            <p class="text-slate-600 mb-4 text-sm sm:text-base">Guru dapat membagikan kartu fisik atau membagi siswa ke dalam kelompok 3-4 anak untuk mendiskusikan urutan perisai Pancasila!</p>
+            <button onclick="closeGroupModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-black px-6 py-3 rounded-2xl shadow-lg">Siap Melaksanakan!</button>
+        </div>
+    </div>
+
+    <script>
+        // Global App State
+        let currentSlide = 1;
+        const totalSlides = 25;
+        let isTTSActive = true;
+        let studentName = "Detektif Cilik";
+        
+        // Game states
+        let gameScore = 0;
+        let tebakRonde = 0;
+        let matchedCount = 0;
+        let reflectionFeeling = "";
+        let reflectionChecklist = [false, false, false, false];
+
+        // Web Audio API Sound Generator for Offline FX
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSoundFX(type) {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'star') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.1);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {
+                console.log('Audio FX Error', e);
+            }
+        }
+
+        // Text-To-Speech Narrator for 1st Graders
+        function speakText(text) {
+            if (!isTTSActive || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // Stop ongoing speech
+
+            // Clean string of emojis for natural TTS
+            const cleanText = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.9; // Slightly slower for primary kids
+            utterance.pitch = 1.1;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleAudioNarrator() {
+            isTTSActive = !isTTSActive;
+            const btnIcon = document.getElementById('tts-icon');
+            const btnText = document.querySelector('#btn-tts span');
+            if (isTTSActive) {
+                btnIcon.className = "fa-solid fa-volume-high text-lg";
+                if(btnText) btnText.innerText = "Suara: ON";
+                speakText("Suara narator aktif.");
+            } else {
+                window.speechSynthesis.cancel();
+                btnIcon.className = "fa-solid fa-volume-xmark text-lg text-slate-400";
+                if(btnText) btnText.innerText = "Suara: OFF";
+            }
+        }
+
+        // Pancasila Data Definitions
+        const simbolData = [
+            { id: 1, name: "Bintang", sila: "Sila ke-1", svg: `<svg class="w-24 h-24 sm:w-28 sm:h-28 mx-auto drop-shadow-md animate-float" viewBox="0 0 100 100"><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="#FFD166" stroke="#D4A373" stroke-width="3"/></svg>`, color: "bg-amber-100 border-amber-400 text-amber-900", desc: "Bintang adalah simbol sila pertama Pancasila." },
+            { id: 2, name: "Rantai", sila: "Sila ke-2", svg: `<svg class="w-24 h-24 sm:w-28 sm:h-28 mx-auto drop-shadow-md animate-float" viewBox="0 0 100 100"><rect x="15" y="40" width="30" height="20" rx="10" fill="none" stroke="#E76F51" stroke-width="8"/><rect x="35" y="40" width="30" height="20" rx="10" fill="none" stroke="#E76F51" stroke-width="8"/><rect x="55" y="40" width="30" height="20" rx="10" fill="none" stroke="#E76F51" stroke-width="8"/></svg>`, color: "bg-rose-100 border-rose-400 text-rose-900", desc: "Rantai adalah simbol sila kedua Pancasila." },
+            { id: 3, name: "Pohon Beringin", sila: "Sila ke-3", svg: `<svg class="w-24 h-24 sm:w-28 sm:h-28 mx-auto drop-shadow-md animate-float" viewBox="0 0 100 100"><path d="M42,90 L58,90 L58,60 L42,60 Z" fill="#8D6E63"/><circle cx="50" cy="42" r="30" fill="#2A9D8F"/><circle cx="32" cy="50" r="18" fill="#2A9D8F"/><circle cx="68" cy="50" r="18" fill="#2A9D8F"/></svg>`, color: "bg-emerald-100 border-emerald-400 text-emerald-900", desc: "Pohon Beringin adalah simbol sila ketiga Pancasila." },
+            { id: 4, name: "Kepala Banteng", sila: "Sila ke-4", svg: `<svg class="w-24 h-24 sm:w-28 sm:h-28 mx-auto drop-shadow-md animate-float" viewBox="0 0 100 100"><path d="M25,25 Q10,10 25,40 Q40,60 50,75 Q60,60 75,40 Q90,10 75,25 Q50,30 25,25 Z" fill="#264653"/><ellipse cx="50" cy="55" rx="20" ry="22" fill="#264653"/><circle cx="40" cy="50" r="4" fill="#FFFFFF"/><circle cx="60" cy="50" r="4" fill="#FFFFFF"/></svg>`, color: "bg-slate-200 border-slate-500 text-slate-900", desc: "Kepala Banteng adalah simbol sila keempat Pancasila." },
+            { id: 5, name: "Padi dan Kapas", sila: "Sila ke-5", svg: `<svg class="w-24 h-24 sm:w-28 sm:h-28 mx-auto drop-shadow-md animate-float" viewBox="0 0 100 100"><path d="M35,85 Q25,50 30,15" stroke="#E9C46A" stroke-width="6" fill="none"/><circle cx="28" cy="25" r="5" fill="#E9C46A"/><circle cx="25" cy="40" r="5" fill="#E9C46A"/><path d="M65,85 Q75,50 70,15" stroke="#2A9D8F" stroke-width="6" fill="none"/><circle cx="72" cy="25" r="6" fill="#FFFFFF" stroke="#2A9D8F" stroke-width="2"/><circle cx="75" cy="40" r="6" fill="#FFFFFF" stroke="#2A9D8F" stroke-width="2"/></svg>`, color: "bg-amber-50 border-amber-300 text-amber-900", desc: "Padi dan Kapas adalah simbol sila kelima Pancasila." }
+        ];
+
+        // Detailed Slide Rendering Logic
+        const slideTitles = [
+            "1. Cover / Judul",
+            "2. Selamat Datang Detektif",
+            "3. Apersepsi",
+            "4. Mengenal Garuda Pancasila",
+            "5. Simbol 1: Bintang",
+            "6. Simbol 2: Rantai",
+            "7. Simbol 3: Pohon Beringin",
+            "8. Simbol 4: Kepala Banteng",
+            "9. Simbol 5: Padi & Kapas",
+            "10. Rangkuman 5 Simbol",
+            "11. Game: Tebak Simbol",
+            "12. Game: Pasangkan Simbol",
+            "13. Game: Detektif Perisai",
+            "14. Misi Kelompok",
+            "15. Diferensiasi Level",
+            "16. Game: Benar atau Salah",
+            "17. Quiz Mandiri",
+            "18. Kuis Akhir (3 Soal)",
+            "19. Refleksi Perasaan",
+            "20. Checklist Pemahaman",
+            "21. Pesan Makna NKRI",
+            "22. Tepuk Pancasila",
+            "23. Lagu Garuda Pancasila",
+            "24. Penghargaan Bintang",
+            "25. Penutup"
+        ];
+
+        function renderSlideContent(slideNum) {
+            const container = document.getElementById('slide-content');
+            let html = "";
+            let speechText = "";
+
+            switch(slideNum) {
+                case 1: // SLIDE 1 - COVER
+                    speechText = "Selamat datang di Petualangan Detektif Cilik Lambang Negara! Mari kita mengenal lima simbol Pancasila bersama!";
+                    html = `
+                        <div class="text-center py-4 space-y-4">
+                            <div class="inline-block bg-amber-100 text-amber-800 border-2 border-amber-300 px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm shadow-sm">
+                                🕵️‍♂️ ELEMEN NKRI • KELAS 1 SD FASE A
+                            </div>
+                            <h2 class="heading-font text-3xl sm:text-5xl font-black text-amber-600 tracking-wide leading-tight">
+                                PETUALANGAN DETEKTIF CILIK<br>
+                                <span class="text-slate-800">LAMBANG NEGARA</span>
+                            </h2>
+                            <p class="text-slate-600 font-bold text-lg sm:text-xl">
+                                ✨ Mengenal 5 Simbol Pancasila ✨
+                            </p>
+
+                            <!-- Big Garuda Illustration -->
+                            <div class="relative w-40 h-40 sm:w-48 sm:h-48 mx-auto my-4 bg-gradient-to-t from-amber-200 to-amber-50 rounded-full flex items-center justify-center p-3 border-4 border-amber-400 shadow-inner">
+                                <div class="text-7xl sm:text-8xl animate-pulse-slow">🦅</div>
+                                <div class="absolute -bottom-2 -right-2 text-4xl animate-bounce">🔍</div>
+                                <div class="absolute -top-2 -left-2 text-3xl">⭐</div>
+                            </div>
+
+                            <div class="pt-2">
+                                <button onclick="playSoundFX('click'); nextSlide();" class="btn-game bg-amber-500 hover:bg-amber-600 text-white font-black text-xl sm:text-2xl px-8 py-4 rounded-3xl border-b-8 border-amber-700 shadow-xl inline-flex items-center gap-3 transform hover:scale-105 transition">
+                                    ▶ MULAI PETUALANGAN
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 2: // SLIDE 2 - WELCOME & MISSIONS
+                    speechText = "Halo Detektif Cilik! Hari ini kita akan mencari dan mengenal 5 simbol hebat dalam perisai Garuda Pancasila. Ada empat misi penting untukmu!";
+                    html = `
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-4 bg-sky-50 border-4 border-sky-200 p-4 rounded-3xl">
+                                <div class="text-5xl">🕵️‍♀️</div>
+                                <div>
+                                    <h3 class="heading-font text-xl font-bold text-sky-800">Halo, Detektif Cilik!</h3>
+                                    <p class="text-slate-700 font-semibold text-sm sm:text-base">
+                                        Hari ini kita akan mencari dan mengenal <strong>5 simbol hebat</strong> dalam perisai Garuda Pancasila!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="bg-amber-50 border-2 border-amber-300 p-3 rounded-2xl flex items-center gap-3">
+                                    <span class="text-2xl">🔎</span>
+                                    <span class="font-bold text-amber-900 text-sm">Misi 1: Mengenal Simbol</span>
+                                </div>
+                                <div class="bg-emerald-50 border-2 border-emerald-300 p-3 rounded-2xl flex items-center gap-3">
+                                    <span class="text-2xl">🧩</span>
+                                    <span class="font-bold text-emerald-900 text-sm">Misi 2: Mencocokkan Simbol</span>
+                                </div>
+                                <div class="bg-purple-50 border-2 border-purple-300 p-3 rounded-2xl flex items-center gap-3">
+                                    <span class="text-2xl">🛡️</span>
+                                    <span class="font-bold text-purple-900 text-sm">Misi 3: Menyusun Perisai</span>
+                                </div>
+                                <div class="bg-rose-50 border-2 border-rose-300 p-3 rounded-2xl flex items-center gap-3">
+                                    <span class="text-2xl">⭐</span>
+                                    <span class="font-bold text-rose-900 text-sm">Misi 4: Detektif Pancasila</span>
+                                </div>
+                            </div>
+
+                            <div class="text-center pt-2">
+                                <button onclick="playSoundFX('click'); nextSlide();" class="btn-game bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-lg px-8 py-3 rounded-2xl border-b-4 border-sky-700 shadow-md">
+                                    ▶ MULAI MISI DETEKTIF
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 3: // SLIDE 3 - APERSEPSI QUIZ
+                    speechText = "Anak-anak, coba lihat gambar burung gagah ini. Ada yang tahu gambar apa itu?";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <h3 class="heading-font text-2xl font-bold text-slate-800">
+                                ❓ PERTANYAAN DETEKTIF
+                            </h3>
+                            <p class="text-slate-600 font-semibold text-lg">
+                                "Anak-anak, coba lihat gambar burung gagah ini. Ada yang tahu gambar apa itu?"
+                            </p>
+
+                            <div class="w-32 h-32 mx-auto bg-amber-100 rounded-2xl border-4 border-amber-300 flex items-center justify-center text-6xl shadow-md my-2">
+                                🦅
+                            </div>
+
+                            <div id="apersepsi-options" class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-xl mx-auto">
+                                <button onclick="checkApersepsi(false, this)" class="btn-game bg-white hover:bg-slate-50 border-4 border-slate-200 text-slate-800 font-bold p-3 rounded-2xl text-base shadow">
+                                    A. Burung Biasa
+                                </button>
+                                <button onclick="checkApersepsi(true, this)" class="btn-game bg-white hover:bg-slate-50 border-4 border-slate-200 text-slate-800 font-bold p-3 rounded-2xl text-base shadow">
+                                    B. Garuda Pancasila
+                                </button>
+                                <button onclick="checkApersepsi(false, this)" class="btn-game bg-white hover:bg-slate-50 border-4 border-slate-200 text-slate-800 font-bold p-3 rounded-2xl text-base shadow">
+                                    C. Burung Mainan
+                                </button>
+                            </div>
+
+                            <div id="apersepsi-feedback" class="min-h-[50px] font-bold text-lg"></div>
+                        </div>
+                    `;
+                    break;
+
+                case 4: // SLIDE 4 - GARUDA PANCASILA OVERVIEW
+                    speechText = "Garuda Pancasila adalah Lambang Negara Indonesia. Di dada Garuda terdapat perisai yang memiliki 5 simbol Pancasila.";
+                    html = `
+                        <div class="text-center space-y-5">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-amber-700">
+                                MENGENAL GARUDA PANCASILA
+                            </h3>
+                            
+                            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 bg-amber-50/80 border-4 border-amber-200 p-6 rounded-3xl">
+                                <div class="text-8xl sm:text-9xl animate-float">🦅</div>
+                                <div class="text-left space-y-3 max-w-md">
+                                    <div class="bg-white p-4 rounded-2xl border-2 border-amber-300 shadow-sm">
+                                        <p class="font-black text-amber-900 text-lg sm:text-xl">
+                                            🇮🇩 Garuda Pancasila
+                                        </p>
+                                        <p class="text-slate-700 font-bold text-sm sm:text-base mt-1">
+                                            adalah <strong>Lambang Negara Indonesia</strong>.
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-2xl border-2 border-sky-300 shadow-sm">
+                                        <p class="text-slate-700 font-bold text-sm sm:text-base">
+                                            🛡️ Di dada Garuda terdapat <strong>perisai</strong> yang berisi 5 simbol Pancasila!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="playSoundFX('click'); goToSlide(5);" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-lg px-8 py-3 rounded-2xl border-b-4 border-emerald-700 inline-flex items-center gap-2">
+                                🔎 LIHAT SIMBOL PERISAI
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                /* SIMBOL 1 - 5 SLIDES */
+                case 5: // SLIDE 5 - BINTANG
+                case 6: // SLIDE 6 - RANTAI
+                case 7: // SLIDE 7 - POHON BERINGIN
+                case 8: // SLIDE 8 - KEPALA BANTENG
+                case 9: // SLIDE 9 - PADI DAN KAPAS
+                    const idx = slideNum - 5;
+                    const sim = simbolData[idx];
+                    speechText = `Ini adalah ${sim.name}. ${sim.desc}`;
+                    html = `
+                        <div class="text-center space-y-5">
+                            <div class="inline-block px-4 py-1.5 rounded-full font-black text-sm ${sim.color} border-2">
+                                ${sim.sila.toUpperCase()}
+                            </div>
+
+                            <h3 class="heading-font text-3xl sm:text-4xl font-black text-slate-800">
+                                ${sim.name.toUpperCase()}
+                            </h3>
+
+                            <div class="p-6 bg-white rounded-3xl border-4 ${sim.color} inline-block shadow-lg max-w-xs mx-auto">
+                                ${sim.svg}
+                            </div>
+
+                            <p class="text-slate-700 font-bold text-lg sm:text-xl max-w-md mx-auto">
+                                "${sim.desc}"
+                            </p>
+
+                            <div class="pt-2">
+                                <button onclick="playSoundFX('star'); speakText('Ini adalah ${sim.name}');" class="btn-game bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-6 py-3 rounded-2xl border-b-4 border-amber-600 inline-flex items-center gap-2 text-base">
+                                    🔊 DENGARKAN: "${sim.name.toUpperCase()}"
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 10: // SLIDE 10 - SUMMARY 5 SYMBOLS
+                    speechText = "Inilah kelima simbol Pancasila: Satu Bintang, Dua Rantai, Tiga Pohon Beringin, Empat Kepala Banteng, Lima Padi dan Kapas!";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-amber-700">
+                                🛡️ RANGKUMAN 5 SIMBOL PANCASILA
+                            </h3>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                                ${simbolData.map((s, i) => `
+                                    <div class="bg-white border-3 border-amber-300 rounded-2xl p-3 flex flex-col items-center justify-between shadow-sm symbol-card">
+                                        <span class="bg-amber-400 text-amber-950 font-black rounded-full w-7 h-7 flex items-center justify-center text-xs mb-1">
+                                            ${i+1}
+                                        </span>
+                                        <div class="w-16 h-16 flex items-center justify-center">
+                                            ${s.svg}
+                                        </div>
+                                        <span class="font-extrabold text-slate-800 text-xs sm:text-sm mt-1">${s.name}</span>
+                                        <span class="text-[10px] text-slate-500 font-bold">${s.sila}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <button onclick="playSoundFX('star'); speakText('Satu Bintang, Dua Rantai, Tiga Pohon Beringin, Empat Kepala Banteng, Lima Padi dan Kapas.');" class="btn-game bg-purple-500 hover:bg-purple-600 text-white font-black px-6 py-3 rounded-2xl border-b-4 border-purple-700 inline-flex items-center gap-2 text-base">
+                                🔊 DENGARKAN SEMUA
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 11: // SLIDE 11 - GAME TEBAK SIMBOL
+                    html = renderTebakSimbolGame();
+                    speechText = "Misi Detektif: Tebak Simbol Apa Ini?";
+                    break;
+
+                case 12: // SLIDE 12 - GAME PASANGKAN SIMBOL
+                    html = renderMatchingGame();
+                    speechText = "Pasangkan Simbol dengan Silanya dengan tepat!";
+                    break;
+
+                case 13: // SLIDE 13 - GAME DETEKTIF PERISAI
+                    html = renderShieldPuzzleGame();
+                    speechText = "Susun 5 simbol pada tempat yang benar di perisai Pancasila!";
+                    break;
+
+                case 14: // SLIDE 14 - MISI KELOMPOK
+                    speechText = "Misi Detektif Kelompok. Bekerjalah bersama temanmu! Detektif hebat mau bekerja sama dan membantu teman.";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <div class="inline-block bg-purple-100 text-purple-900 border-2 border-purple-300 px-4 py-1 rounded-full font-black text-sm">
+                                👨‍👩‍👧‍👦 GOTONG ROYONG
+                            </div>
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-slate-800">
+                                MISI DETEKTIF KELOMPOK
+                            </h3>
+
+                            <div class="bg-amber-50 border-4 border-amber-300 p-5 rounded-3xl max-w-xl mx-auto text-left space-y-2">
+                                <p class="font-extrabold text-amber-900 text-center text-lg">"Bekerjalah bersama temanmu!"</p>
+                                <ol class="list-decimal list-inside font-bold text-slate-700 space-y-1 text-sm sm:text-base">
+                                    <li>Amati simbol di layar bersama kelompok.</li>
+                                    <li>Cari kartu simbol yang sesuai.</li>
+                                    <li>Tempelkan pada papan perisai.</li>
+                                    <li>Susun dari sila ke-1 sampai sila ke-5.</li>
+                                    <li>Tunjukkan hasil kelompokmu di depan kelas!</li>
+                                </ol>
+                            </div>
+
+                            <div class="bg-emerald-100 border-2 border-emerald-400 p-3 rounded-2xl max-w-md mx-auto text-emerald-900 font-bold text-sm">
+                                🤝 "Detektif hebat mau bekerja sama dan membantu teman."
+                            </div>
+
+                            <button onclick="openGroupModal()" class="btn-game bg-purple-500 hover:bg-purple-600 text-white font-extrabold px-6 py-2.5 rounded-2xl border-b-4 border-purple-700 text-sm">
+                                📜 BUKA PANDUAN GURU
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 15: // SLIDE 15 - DIFERENSIASI LEVEL
+                    speechText = "Pilih Tingkat Tantangan Detektifmu!";
+                    html = `
+                        <div class="text-center space-y-5">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-slate-800">
+                                🎯 PILIH TINGKAT TANTANGAN
+                            </h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                                <div class="bg-sky-50 border-4 border-sky-300 p-5 rounded-3xl space-y-3 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-3xl">💙</span>
+                                        <h4 class="heading-font text-xl font-bold text-sky-800">LEVEL 1 - BIMBINGAN</h4>
+                                        <p class="text-slate-600 font-semibold text-sm mt-2">
+                                            "Gunakan warna dan bayangan sebagai petunjuk menyusun simbol."
+                                        </p>
+                                    </div>
+                                    <button onclick="playSoundFX('click'); goToSlide(13);" class="btn-game bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 rounded-2xl border-b-4 border-sky-700 text-sm">
+                                        MAIN LEVEL 1
+                                    </button>
+                                </div>
+
+                                <div class="bg-emerald-50 border-4 border-emerald-300 p-5 rounded-3xl space-y-3 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-3xl">💚</span>
+                                        <h4 class="heading-font text-xl font-bold text-emerald-800">LEVEL 2 - MANDIRI</h4>
+                                        <p class="text-slate-600 font-semibold text-sm mt-2">
+                                            "Susun 5 simbol pada perisai kosong tanpa bantuan petunjuk!"
+                                        </p>
+                                    </div>
+                                    <button onclick="playSoundFX('click'); goToSlide(13);" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-2xl border-b-4 border-emerald-700 text-sm">
+                                        MAIN LEVEL 2
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 16: // SLIDE 16 - GAME BENAR ATAU SALAH
+                    html = renderTrueFalseGame();
+                    speechText = "Game Benar atau Salah: Jawablah pertanyaan berikut!";
+                    break;
+
+                case 17: // SLIDE 17 - QUIZ MANDIRI
+                    html = renderQuizMandiri();
+                    speechText = "Uji Kemampuan Detektif Mandiri!";
+                    break;
+
+                case 18: // SLIDE 18 - KUIS AKHIR 3 SOAL
+                    html = renderKuisAkhirRPP();
+                    speechText = "Kuis Akhir Detektif Pancasila!";
+                    break;
+
+                case 19: // SLIDE 19 - REFLEKSI PERASAAN EMOJI
+                    speechText = "Apa yang kamu rasakan setelah belajar hari ini?";
+                    html = `
+                        <div class="text-center space-y-5">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-amber-800">
+                                😊 APA YANG KAMU RASAKAN?
+                            </h3>
+                            <p class="text-slate-600 font-semibold text-base sm:text-lg">
+                                Bagaimana perasaanmu setelah belajar tentang simbol Pancasila hari ini?
+                            </p>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mx-auto">
+                                <button onclick="chooseReflection('SENANG')" class="btn-game bg-emerald-50 hover:bg-emerald-100 border-4 border-emerald-300 p-4 rounded-3xl text-center space-y-2">
+                                    <div class="text-5xl animate-bounce">😊</div>
+                                    <div class="font-extrabold text-emerald-900">SENANG</div>
+                                </button>
+
+                                <button onclick="chooseReflection('CUKUP')" class="btn-game bg-amber-50 hover:bg-amber-100 border-4 border-amber-300 p-4 rounded-3xl text-center space-y-2">
+                                    <div class="text-5xl">😐</div>
+                                    <div class="font-extrabold text-amber-900">CUKUP</div>
+                                </button>
+
+                                <button onclick="chooseReflection('BINGUNG')" class="btn-game bg-rose-50 hover:bg-rose-100 border-4 border-rose-300 p-4 rounded-3xl text-center space-y-2">
+                                    <div class="text-5xl">☹️</div>
+                                    <div class="font-extrabold text-rose-900">BINGUNG</div>
+                                </button>
+                            </div>
+
+                            <div id="reflection-feedback" class="min-h-[60px] font-bold text-lg sm:text-xl text-amber-900 bg-amber-100/60 p-4 rounded-2xl max-w-md mx-auto hidden"></div>
+                        </div>
+                    `;
+                    break;
+
+                case 20: // SLIDE 20 - CHECKLIST PEMAHAMAN
+                    speechText = "Hari ini saya sudah bisa mengenal simbol, mencocokkan, menyusun perisai, dan bekerja sama.";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-slate-800">
+                                📋 REFLEKSI PEMBELAJARAN
+                            </h3>
+                            <p class="font-black text-amber-700 text-lg">"Hari ini saya sudah bisa..."</p>
+
+                            <div class="bg-white border-4 border-amber-300 p-4 rounded-3xl max-w-md mx-auto text-left space-y-3 shadow-md">
+                                ${[
+                                    "Mengenal 5 simbol Pancasila.",
+                                    "Mencocokkan simbol dengan sila.",
+                                    "Menyusun simbol pada perisai.",
+                                    "Bekerja sama dengan teman."
+                                ].map((item, idx) => `
+                                    <label class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-slate-50 transition">
+                                        <input type="checkbox" onchange="toggleChecklist(${idx})" ${reflectionChecklist[idx] ? 'checked' : ''} class="w-6 h-6 rounded-lg text-emerald-500 focus:ring-emerald-400">
+                                        <span class="font-extrabold text-slate-700 text-sm sm:text-base">${item}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 21: // SLIDE 21 - MAKNA NKRI
+                    speechText = "Walaupun kita berbeda-beda, kita tetap bersatu sebagai anak Indonesia. 5 simbol Pancasila berada dalam satu perisai. Aku bangga menjadi anak Indonesia!";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-black text-rose-600">
+                                🇮🇩 PESAN MAKNA NKRI
+                            </h3>
+
+                            <div class="bg-rose-50 border-4 border-rose-300 p-6 rounded-3xl max-w-lg mx-auto space-y-3">
+                                <p class="font-extrabold text-slate-800 text-base sm:text-lg">
+                                    "Walaupun kita berbeda-beda, kita tetap bersatu sebagai anak Indonesia."
+                                </p>
+                                <div class="text-5xl">🛡️🤝🇮🇩</div>
+                                <p class="text-slate-700 font-bold text-sm sm:text-base">
+                                    "5 simbol Pancasila berada dalam satu perisai. Begitu juga kita, berbeda-beda tetapi tetap satu dalam NKRI."
+                                </p>
+                            </div>
+
+                            <div class="inline-block bg-amber-400 text-amber-950 font-black px-6 py-2.5 rounded-full text-base sm:text-lg shadow-md border-2 border-amber-500 animate-pulse">
+                                ❤️ AKU BANGGA MENJADI ANAK INDONESIA!
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 22: // SLIDE 22 - TEPUK PANCASILA
+                    speechText = "Ayo ikuti Tepuk Pancasila bersama-sama!";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-emerald-700">
+                                👏 TEPUK PANCASILA
+                            </h3>
+
+                            <div class="bg-emerald-50 border-4 border-emerald-300 p-4 rounded-3xl max-w-md mx-auto space-y-2 text-left font-black text-slate-800 text-sm sm:text-base">
+                                <p class="text-emerald-800">👏 Prok 3x → <span class="text-amber-600">"Satu Bintang"</span></p>
+                                <p class="text-emerald-800">👏 Prok 3x → <span class="text-rose-600">"Dua Rantai"</span></p>
+                                <p class="text-emerald-800">👏 Prok 3x → <span class="text-emerald-600">"Tiga Pohon Beringin"</span></p>
+                                <p class="text-emerald-800">👏 Prok 3x → <span class="text-slate-800">"Empat Kepala Banteng"</span></p>
+                                <p class="text-emerald-800">👏 Prok 3x → <span class="text-amber-700">"Lima Padi dan Kapas"</span></p>
+                            </div>
+
+                            <button onclick="playSoundFX('star'); speakText('Prok prok prok Satu Bintang! Prok prok prok Dua Rantai! Prok prok prok Tiga Pohon Beringin! Prok prok prok Empat Kepala Banteng! Prok prok prok Lima Padi dan Kapas!');" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-6 py-3 rounded-2xl border-b-4 border-emerald-700 text-base">
+                                🔊 MULAI TEPUK PANCASILA
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 23: // SLIDE 23 - LAGU GARUDA PANCASILA
+                    speechText = "Ayo bernyanyi lagu Garuda Pancasila!";
+                    html = `
+                        <div class="text-center space-y-5">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-bold text-amber-700">
+                                🎵 AYO BERNYANYI
+                            </h3>
+
+                            <div class="bg-amber-50 border-4 border-amber-300 p-6 rounded-3xl max-w-md mx-auto space-y-3">
+                                <div class="text-6xl animate-bounce">🎶</div>
+                                <h4 class="heading-font text-2xl font-bold text-slate-800">"Garuda Pancasila"</h4>
+                                <p class="text-slate-600 font-bold text-sm">
+                                    Nyanyikan bersama guru dan teman-teman kelasmu dengan penuh semangat!
+                                </p>
+                            </div>
+
+                            <button onclick="playSoundFX('star'); speakText('Garuda Pancasila, akulah pendukungmu! Patriot proklamasi, sedia berkorban untukmu!');" class="btn-game bg-rose-500 hover:bg-rose-600 text-white font-black px-8 py-3.5 rounded-2xl border-b-4 border-rose-700 text-lg inline-flex items-center gap-2">
+                                ▶ PUTAR LAGU / NADA
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 24: // SLIDE 24 - SERTIFIKAT BINTANG DETEKTIF
+                    speechText = "Selamat! Kamu telah menyelesaikan Petualangan Detektif Cilik Lambang Negara!";
+                    html = `
+                        <div class="text-center space-y-4">
+                            <h3 class="heading-font text-2xl sm:text-3xl font-black text-amber-600">
+                                🏆 BINTANG DETEKTIF PANCASILA
+                            </h3>
+
+                            <div class="bg-gradient-to-br from-amber-100 via-white to-amber-50 border-8 border-amber-400 p-6 rounded-3xl shadow-2xl max-w-lg mx-auto relative">
+                                <div class="text-5xl mb-2">⭐ Certificate ⭐</div>
+                                <h4 class="heading-font text-xl font-bold text-slate-800">SELAMAT!</h4>
+                                <div class="my-2">
+                                    <input type="text" id="input-student-name" value="${studentName}" onchange="studentName=this.value" placeholder="Ketik Namamu di sini" class="text-center font-black text-amber-900 text-xl bg-amber-200/60 border-b-4 border-amber-500 rounded-xl px-4 py-1 outline-none w-full max-w-xs">
+                                </div>
+                                <p class="text-slate-700 font-bold text-xs sm:text-sm">
+                                    Telah berhasil menyelesaikan <strong>Petualangan Detektif Cilik Lambang Negara</strong>!
+                                </p>
+
+                                <div class="grid grid-cols-2 gap-2 mt-4 text-left text-xs font-black text-slate-800">
+                                    <div class="bg-white p-2 rounded-xl border border-amber-200">⭐ Berani belajar</div>
+                                    <div class="bg-white p-2 rounded-xl border border-amber-200">⭐ Mau bekerja sama</div>
+                                    <div class="bg-white p-2 rounded-xl border border-amber-200">⭐ Kenal simbol Pancasila</div>
+                                    <div class="bg-white p-2 rounded-xl border border-amber-200">⭐ Bangga Anak Indonesia</div>
+                                </div>
+                            </div>
+
+                            <button onclick="triggerConfetti(); window.print();" class="no-print btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-6 py-2.5 rounded-2xl border-b-4 border-emerald-700 text-sm inline-flex items-center gap-2">
+                                🖨️ CETAK SERTIFIKAT
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 25: // SLIDE 25 - PENUTUP
+                    speechText = "Terima kasih Detektif Cilik! Belajar Pancasila itu menyenangkan. Kenali simbolnya, pahami maknanya, dan amalkan!";
+                    html = `
+                        <div class="text-center space-y-5">
+                            <h3 class="heading-font text-3xl sm:text-4xl font-black text-amber-600">
+                                TERIMA KASIH, DETEKTIF CILIK!
+                            </h3>
+
+                            <div class="bg-amber-50 border-4 border-amber-300 p-6 rounded-3xl max-w-lg mx-auto space-y-2">
+                                <p class="text-xl font-black text-slate-800">"Belajar Pancasila itu menyenangkan."</p>
+                                <p class="text-slate-700 font-bold text-base">
+                                    Kenali simbolnya, pahami maknanya, dan amalkan dalam kehidupan sehari-hari!
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap justify-center gap-3 pt-2">
+                                <button onclick="playSoundFX('click'); goToSlide(1);" class="btn-game bg-sky-500 hover:bg-sky-600 text-white font-extrabold px-6 py-3 rounded-2xl border-b-4 border-sky-700 text-sm">
+                                    🏠 MENU UTAMA
+                                </button>
+                                <button onclick="playSoundFX('click'); goToSlide(11);" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-6 py-3 rounded-2xl border-b-4 border-emerald-700 text-sm">
+                                    🔄 MAIN GAME LAGI
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            container.innerHTML = html;
+            speakText(speechText);
+            updateNavigationUI();
+        }
+
+        // Game 1: Tebak Simbol
+        const tebakRondes = [
+            { sim: simbolData[0], opts: ["Rantai", "Bintang", "Pohon Beringin"] },
+            { sim: simbolData[1], opts: ["Rantai", "Kepala Banteng", "Bintang"] },
+            { sim: simbolData[2], opts: ["Padi dan Kapas", "Rantai", "Pohon Beringin"] },
+            { sim: simbolData[3], opts: ["Kepala Banteng", "Bintang", "Padi dan Kapas"] },
+            { sim: simbolData[4], opts: ["Pohon Beringin", "Padi dan Kapas", "Rantai"] }
+        ];
+
+        function renderTebakSimbolGame() {
+            const currentRonde = tebakRondes[tebakRonde % tebakRondes.length];
+            return `
+                <div class="text-center space-y-4">
+                    <div class="flex justify-between items-center max-w-md mx-auto px-2">
+                        <span class="font-extrabold text-amber-700 text-sm">Ronde ${tebakRonde + 1} / 5</span>
+                        <span class="font-extrabold text-emerald-600 text-sm">⭐ Skor: ${gameScore}</span>
+                    </div>
+
+                    <h3 class="heading-font text-2xl font-bold text-slate-800">
+                        🔎 DETEKTIF, SIMBOL APA INI?
+                    </h3>
+
+                    <div class="bg-white p-4 rounded-3xl border-4 border-amber-300 inline-block shadow-md">
+                        ${currentRonde.sim.svg}
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
+                        ${currentRonde.opts.map(opt => `
+                            <button onclick="answerTebakSimbol('${opt}', '${currentRonde.sim.name}')" class="btn-game bg-white hover:bg-amber-50 border-3 border-amber-300 text-slate-800 font-extrabold p-3 rounded-2xl text-sm shadow">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="tebak-feedback" class="min-h-[40px] font-extrabold text-base"></div>
+                </div>
+            `;
+        }
+
+        function answerTebakSimbol(selected, correct) {
+            const fb = document.getElementById('tebak-feedback');
+            if (selected === correct) {
+                playSoundFX('correct');
+                gameScore += 10;
+                fb.className = "min-h-[40px] font-extrabold text-emerald-600 text-lg animate-bounce";
+                fb.innerText = "⭐ BENAR! Kamu Detektif Hebat!";
+                setTimeout(() => {
+                    tebakRonde++;
+                    if(tebakRonde >= 5) {
+                        goToSlide(12);
+                    } else {
+                        renderSlideContent(11);
+                    }
+                }, 1200);
+            } else {
+                playSoundFX('wrong');
+                fb.className = "min-h-[40px] font-extrabold text-rose-500 text-base";
+                fb.innerText = "Belum tepat. Coba perhatikan bentuk simbolnya lagi. 😊";
+            }
+        }
+
+        // Game 2: Pasangkan Simbol & Sila
+        let selectedSimbolId = null;
+
+        function renderMatchingGame() {
+            return `
+                <div class="text-center space-y-4">
+                    <h3 class="heading-font text-2xl font-bold text-purple-800">
+                        🧩 PASANGKAN SIMBOL DENGAN SILANYA
+                    </h3>
+                    <p class="text-slate-600 text-xs sm:text-sm font-bold">Klik Simbol terlebih dahulu, lalu klik Sila yang sesuai!</p>
+
+                    <div class="grid grid-cols-2 gap-4 max-w-lg mx-auto">
+                        <!-- Column 1: Simbols -->
+                        <div class="space-y-2">
+                            <h4 class="font-black text-slate-700 text-xs">SIMBOL</h4>
+                            ${simbolData.map(s => `
+                                <button id="match-sim-${s.id}" onclick="selectSimbolForMatch(${s.id})" class="w-full bg-white border-3 border-purple-200 hover:border-purple-400 p-2 rounded-2xl flex items-center gap-2 transition font-bold text-xs shadow-sm">
+                                    <div class="w-8 h-8">${s.svg}</div>
+                                    <span>${s.name}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <!-- Column 2: Silas -->
+                        <div class="space-y-2">
+                            <h4 class="font-black text-slate-700 text-xs">SILA</h4>
+                            ${[1, 2, 3, 4, 5].map(sNum => `
+                                <button id="match-sila-${sNum}" onclick="selectSilaForMatch(${sNum})" class="w-full bg-purple-50 hover:bg-purple-100 border-3 border-purple-300 p-3 rounded-2xl font-black text-purple-900 text-xs sm:text-sm shadow-sm flex items-center justify-between">
+                                    <span>Sila ke-${sNum}</span>
+                                    <span class="text-purple-400">➡️</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="match-feedback" class="min-h-[35px] font-extrabold text-sm text-purple-700"></div>
+                </div>
+            `;
+        }
+
+        function selectSimbolForMatch(id) {
+            playSoundFX('click');
+            selectedSimbolId = id;
+            simbolData.forEach(s => {
+                const btn = document.getElementById(`match-sim-${s.id}`);
+                if(btn) btn.className = s.id === id ? "w-full bg-purple-200 border-4 border-purple-600 p-2 rounded-2xl flex items-center gap-2 font-black text-xs" : "w-full bg-white border-3 border-purple-200 p-2 rounded-2xl flex items-center gap-2 font-bold text-xs";
+            });
+            document.getElementById('match-feedback').innerText = "Sekarang pilih Sila yang cocok!";
+        }
+
+        function selectSilaForMatch(silaNum) {
+            if (!selectedSimbolId) {
+                document.getElementById('match-feedback').innerText = "Klik pilihan Simbol dulu ya!";
+                return;
+            }
+            if (selectedSimbolId === silaNum) {
+                playSoundFX('correct');
+                matchedCount++;
+                document.getElementById(`match-sim-${selectedSimbolId}`).style.opacity = '0.4';
+                document.getElementById(`match-sila-${silaNum}`).className = "w-full bg-emerald-100 border-3 border-emerald-500 p-3 rounded-2xl font-black text-emerald-900 text-xs";
+                document.getElementById('match-feedback').innerText = "⭐ Pasangan Tepat! Hebat!";
+                selectedSimbolId = null;
+                if(matchedCount >= 5) {
+                    triggerConfetti();
+                    setTimeout(() => goToSlide(13), 1500);
+                }
+            } else {
+                playSoundFX('wrong');
+                document.getElementById('match-feedback').innerText = "Belum cocok, coba lagi! 😊";
+            }
+        }
+
+        // Game 3: Puzzle Perisai
+        let shieldSlots = [null, null, null, null, null];
+
+        function renderShieldPuzzleGame() {
+            return `
+                <div class="text-center space-y-3">
+                    <h3 class="heading-font text-2xl font-bold text-amber-800">
+                        🛡️ DETEKTIF PERISAI PANCASILA
+                    </h3>
+                    <p class="text-slate-600 font-bold text-xs">Klik Simbol di bawah lalu klik nomor posisi di perisai!</p>
+
+                    <!-- Blank Shield slots grid -->
+                    <div class="relative w-64 h-64 mx-auto bg-amber-100 border-4 border-amber-400 rounded-3xl p-3 grid grid-cols-2 gap-2 shadow-inner">
+                        <div onclick="placeInShield(0)" class="border-2 border-dashed border-amber-400 rounded-xl flex items-center justify-center bg-white/70 cursor-pointer">
+                            ${shieldSlots[0] ? shieldSlots[0].svg : '<span class="font-black text-amber-700 text-xs">1. Bintang</span>'}
+                        </div>
+                        <div onclick="placeInShield(1)" class="border-2 border-dashed border-amber-400 rounded-xl flex items-center justify-center bg-white/70 cursor-pointer">
+                            ${shieldSlots[1] ? shieldSlots[1].svg : '<span class="font-black text-amber-700 text-xs">2. Rantai</span>'}
+                        </div>
+                        <div onclick="placeInShield(2)" class="border-2 border-dashed border-amber-400 rounded-xl flex items-center justify-center bg-white/70 cursor-pointer">
+                            ${shieldSlots[2] ? shieldSlots[2].svg : '<span class="font-black text-amber-700 text-xs">3. Beringin</span>'}
+                        </div>
+                        <div onclick="placeInShield(3)" class="border-2 border-dashed border-amber-400 rounded-xl flex items-center justify-center bg-white/70 cursor-pointer">
+                            ${shieldSlots[3] ? shieldSlots[3].svg : '<span class="font-black text-amber-700 text-xs">4. Banteng</span>'}
+                        </div>
+                        <div onclick="placeInShield(4)" class="col-span-2 border-2 border-dashed border-amber-400 rounded-xl flex items-center justify-center bg-white/70 cursor-pointer">
+                            ${shieldSlots[4] ? shieldSlots[4].svg : '<span class="font-black text-amber-700 text-xs">5. Padi & Kapas</span>'}
+                        </div>
+                    </div>
+
+                    <!-- Available Symbol options -->
+                    <div class="flex justify-center gap-2 overflow-x-auto p-1">
+                        ${simbolData.map(s => `
+                            <button onclick="selectedForShield=${s.id}; playSoundFX('click');" class="bg-white border-2 border-amber-300 p-1.5 rounded-xl w-14 h-14 flex items-center justify-center hover:scale-110 transition shadow-sm">
+                                ${s.svg}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="shield-feedback" class="min-h-[25px] font-bold text-xs text-amber-900"></div>
+                </div>
+            `;
+        }
+
+        let selectedForShield = null;
+        function placeInShield(slotIdx) {
+            if (!selectedForShield) {
+                document.getElementById('shield-feedback').innerText = "Pilih dulu simbol di bawah!";
+                return;
+            }
+            if (selectedForShield === slotIdx + 1) {
+                playSoundFX('correct');
+                shieldSlots[slotIdx] = simbolData[slotIdx];
+                selectedForShield = null;
+                renderSlideContent(13);
+                if (shieldSlots.every(s => s !== null)) {
+                    triggerConfetti();
+                    document.getElementById('shield-feedback').innerText = "🎉 PERISAI LENGKAP! KAMU DETEKTIF HEBAT!";
+                }
+            } else {
+                playSoundFX('wrong');
+                document.getElementById('shield-feedback').innerText = "Posisi kurang tepat untuk simbol ini!";
+            }
+        }
+
+        // Game 4: Benar atau Salah
+        const trueFalseQuestions = [
+            { text: "Bintang adalah simbol sila pertama.", ans: true },
+            { text: "Rantai adalah simbol sila kedua.", ans: true },
+            { text: "Pohon beringin adalah simbol sila kelima.", ans: false },
+            { text: "Kepala banteng adalah simbol sila keempat.", ans: true },
+            { text: "Padi dan kapas adalah simbol sila ketiga.", ans: false }
+        ];
+        let tfIndex = 0;
+
+        function renderTrueFalseGame() {
+            const q = trueFalseQuestions[tfIndex % trueFalseQuestions.length];
+            return `
+                <div class="text-center space-y-4">
+                    <span class="font-black text-amber-700 text-xs">Soal ${tfIndex + 1} / 5</span>
+                    <h3 class="heading-font text-2xl font-bold text-slate-800">
+                        ✅ GAME BENAR ATAU SALAH ❌
+                    </h3>
+
+                    <div class="bg-amber-50 border-4 border-amber-300 p-6 rounded-3xl max-w-md mx-auto shadow-sm">
+                        <p class="font-black text-slate-800 text-lg">
+                            "${q.text}"
+                        </p>
+                    </div>
+
+                    <div class="flex justify-center gap-4 max-w-xs mx-auto">
+                        <button onclick="checkTrueFalse(true, ${q.ans})" class="btn-game bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-3 rounded-2xl border-b-4 border-emerald-700 text-base flex-1">
+                            ✅ BENAR
+                        </button>
+                        <button onclick="checkTrueFalse(false, ${q.ans})" class="btn-game bg-rose-500 hover:bg-rose-600 text-white font-black px-6 py-3 rounded-2xl border-b-4 border-rose-700 text-base flex-1">
+                            ❌ SALAH
+                        </button>
+                    </div>
+
+                    <div id="tf-feedback" class="min-h-[35px] font-black text-base"></div>
+                </div>
+            `;
+        }
+
+        function checkTrueFalse(userChoice, correctChoice) {
+            const fb = document.getElementById('tf-feedback');
+            if (userChoice === correctChoice) {
+                playSoundFX('correct');
+                fb.className = "min-h-[35px] font-black text-emerald-600 text-lg";
+                fb.innerText = "⭐ JAWABAN BENAR!";
+                setTimeout(() => {
+                    tfIndex++;
+                    if(tfIndex >= 5) goToSlide(17);
+                    else renderSlideContent(16);
+                }, 1000);
+            } else {
+                playSoundFX('wrong');
+                fb.className = "min-h-[35px] font-black text-rose-500 text-base";
+                fb.innerText = "Coba pikirkan lagi ya! 😊";
+            }
+        }
+
+        // Quiz Mandiri
+        let mandiriIdx = 0;
+        const mandiriQuestions = [
+            { q: "Simbol sila pertama adalah...", opts: ["Bintang", "Rantai", "Padi Kapas"], ans: 0 },
+            { q: "Simbol sila ketiga adalah...", opts: ["Banteng", "Pohon Beringin", "Bintang"], ans: 1 },
+            { q: "Padi dan Kapas melambangkan sila ke-...", opts: ["3", "4", "5"], ans: 2 },
+            { q: "Rantai adalah simbol sila ke-...", opts: ["2", "1", "5"], ans: 0 },
+            { q: "Sila keempat disimbolkan oleh...", opts: ["Beringin", "Kepala Banteng", "Bintang"], ans: 1 }
+        ];
+
+        function renderQuizMandiri() {
+            const q = mandiriQuestions[mandiriIdx % mandiriQuestions.length];
+            return `
+                <div class="text-center space-y-4">
+                    <span class="font-black text-sky-700 text-xs">Soal ${mandiriIdx + 1} / 5</span>
+                    <h3 class="heading-font text-2xl font-bold text-sky-800">
+                        ⭐ UJI KEMAMPUAN DETEKTIF
+                    </h3>
+
+                    <div class="bg-sky-50 border-3 border-sky-300 p-4 rounded-3xl max-w-md mx-auto">
+                        <p class="font-black text-slate-800 text-base sm:text-lg">"${q.q}"</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
+                        ${q.opts.map((opt, i) => `
+                            <button onclick="checkMandiriQuiz(${i}, ${q.ans})" class="btn-game bg-white border-3 border-sky-200 text-slate-800 font-extrabold p-3 rounded-2xl text-sm shadow-sm">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="mandiri-feedback" class="min-h-[35px] font-black text-sm text-sky-700"></div>
+                </div>
+            `;
+        }
+
+        function checkMandiriQuiz(selected, correct) {
+            const fb = document.getElementById('mandiri-feedback');
+            if (selected === correct) {
+                playSoundFX('correct');
+                fb.innerText = "⭐ Tepat Sekali!";
+                setTimeout(() => {
+                    mandiriIdx++;
+                    if (mandiriIdx >= 5) goToSlide(18);
+                    else renderSlideContent(17);
+                }, 1000);
+            } else {
+                playSoundFX('wrong');
+                fb.innerText = "Hampir tepat! Coba lagi.";
+            }
+        }
+
+        // Kuis Akhir RPP (3 Soal)
+        let rppKuisIdx = 0;
+        const rppQuestions = [
+            { q: "Manakah simbol sila ke-1?", opts: ["⭐ Bintang", "⛓️ Rantai", "🌾 Padi Kapas"], ans: 0 },
+            { q: "Manakah simbol sila ke-3?", opts: ["🐂 Banteng", "🌳 Pohon Beringin", "⭐ Bintang"], ans: 1 },
+            { q: "Manakah simbol sila ke-5?", opts: ["⛓️ Rantai", "🌾 Padi dan Kapas", "🌳 Pohon Beringin"], ans: 1 }
+        ];
+
+        function renderKuisAkhirRPP() {
+            const q = rppQuestions[rppKuisIdx % rppQuestions.length];
+            return `
+                <div class="text-center space-y-4">
+                    <span class="font-black text-amber-700 text-xs">Kuis Penutup ${rppKuisIdx + 1} / 3</span>
+                    <h3 class="heading-font text-2xl font-bold text-amber-800">
+                        🎯 KUIS AKHIR PANCASILA
+                    </h3>
+
+                    <div class="bg-amber-50 border-4 border-amber-300 p-5 rounded-3xl max-w-md mx-auto">
+                        <p class="font-black text-slate-800 text-lg">"${q.q}"</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
+                        ${q.opts.map((opt, i) => `
+                            <button onclick="checkKuisAkhir(${i}, ${q.ans})" class="btn-game bg-white border-3 border-amber-300 text-slate-800 font-extrabold p-3 rounded-2xl text-sm shadow">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="kuis-akhir-fb" class="min-h-[35px] font-black text-base"></div>
+                </div>
+            `;
+        }
+
+        function checkKuisAkhir(selected, correct) {
+            const fb = document.getElementById('kuis-akhir-fb');
+            if (selected === correct) {
+                playSoundFX('correct');
+                fb.className = "min-h-[35px] font-black text-emerald-600 text-lg";
+                fb.innerText = "⭐ HEBAT! Kamu Menyelesaikan Misi!";
+                setTimeout(() => {
+                    rppKuisIdx++;
+                    if (rppKuisIdx >= 3) goToSlide(19);
+                    else renderSlideContent(18);
+                }, 1000);
+            } else {
+                playSoundFX('wrong');
+                fb.className = "min-h-[35px] font-black text-rose-500 text-base";
+                fb.innerText = "Coba perhatikan gambarnya lagi ya!";
+            }
+        }
+
+        function checkApersepsi(isCorrect, btn) {
+            const fb = document.getElementById('apersepsi-feedback');
+            if (isCorrect) {
+                playSoundFX('correct');
+                fb.className = "min-h-[50px] font-bold text-emerald-600 text-lg animate-bounce";
+                fb.innerText = "Hebat! Kamu mengenal Garuda Pancasila! ⭐";
+            } else {
+                playSoundFX('wrong');
+                fb.className = "min-h-[50px] font-bold text-amber-700 text-base";
+                fb.innerText = "Ayo perhatikan lagi gambar Garuda dengan teliti. 😊";
+            }
+        }
+
+        function chooseReflection(type) {
+            playSoundFX('click');
+            reflectionFeeling = type;
+            const fb = document.getElementById('reflection-feedback');
+            fb.classList.remove('hidden');
+
+            if (type === 'SENANG') {
+                fb.innerText = "Keren! Kamu belajar dengan gembira. ⭐";
+            } else if (type === 'CUKUP') {
+                fb.innerText = "Terima kasih sudah belajar. Terus berlatih ya!";
+            } else {
+                fb.innerText = "Tidak apa-apa. Kita bisa belajar bersama lagi.";
+            }
+        }
+
+        function toggleChecklist(idx) {
+            playSoundFX('click');
+            reflectionChecklist[idx] = !reflectionChecklist[idx];
+        }
+
+        function openGroupModal() {
+            playSoundFX('click');
+            document.getElementById('group-modal').classList.remove('hidden');
+        }
+
+        function closeGroupModal() {
+            playSoundFX('click');
+            document.getElementById('group-modal').classList.add('hidden');
+        }
+
+        function triggerConfetti() {
+            try {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } catch(e) {}
+        }
+
+        function updateNavigationUI() {
+            document.getElementById('slide-indicator').innerText = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('btn-prev').disabled = currentSlide === 1;
+
+            const select = document.getElementById('slide-select');
+            select.value = currentSlide;
+        }
+
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides) return;
+            currentSlide = n;
+            renderSlideContent(currentSlide);
+        }
+
+        function nextSlide() {
+            playSoundFX('click');
+            if (currentSlide < totalSlides) {
+                goToSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            playSoundFX('click');
+            if (currentSlide > 1) {
+                goToSlide(currentSlide - 1);
+            }
+        }
+
+        function repeatCurrentSlideSpeech() {
+            playSoundFX('click');
+            renderSlideContent(currentSlide);
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            const select = document.getElementById('slide-select');
+            slideTitles.forEach((title, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx + 1;
+                opt.innerText = title;
+                select.appendChild(opt);
+            });
+
+            renderSlideContent(1);
+        };
+    </script>
+</body>
+</html>
